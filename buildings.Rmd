@@ -17,7 +17,7 @@ library(knitr)
 library(countrycode)
 
 build$City=as.character(build$City)
-build$City=gsub("ÿ"," ",build$City)
+build$City=gsub("?"," ",build$City)
 head(build$City)
 
 colnames(build)
