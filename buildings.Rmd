@@ -1,0 +1,85 @@
+---
+title: "Buildings"
+author: "John Cartwright and Josh Schacht"
+date: "October 19, 2016"
+output: html_document
+---
+
+#reading, organinzing and cleaning data
+```{r}
+build=read.csv("tallestbuildings.csv")
+
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(countrycode)
+
+build$City=as.character(build$City)
+build$City=gsub("ÿ"," ",build$City)
+head(build$City)
+
+colnames(build)
+
+build$Height..ft.=as.character(build$Height..ft.)
+build$Height..ft.=gsub(",","",build$Height..ft.)
+build$Height..ft.=as.numeric(build$Height..ft.)
+```
+
+#1
+```{r}
+build %>%
+group_by(City) %>% summarise(num_builds = n()) %>%
+ggplot(aes(y=num_builds, x=reorder(City, num_builds))) +
+geom_bar(stat = "identity") + coord_flip()
+
+build%>% group_by(City)%>% tally()%>% ggplot(aes(reorder(City,n),n))+geom_bar(stat="identity")+coord_flip()
+```
+
+#2
+```{r}
+build %>% group_by(City) %>%  summarise(Mean.Height=round(mean(Height..ft.),2))%>%
+    ggplot(aes(reorder(City,Mean.Height),Mean.Height)) +
+    geom_bar(stat="identity")+coord_flip()
+```
+
+#3
+```{r}
+bldg = build %>% separate(City, c("City","Country"), sep="[:punct:]")
+bldg$Country = countrycode(bldg$Country,"iso2c","country.name")
+
+bldg %>% group_by(Country) %>% tally() %>%
+ggplot(aes(reorder(Country, n),n)) +
+geom_bar(stat = "identity") + coord_flip()
+```
+
+#4
+```{r}
+bldg %>% group_by(Country) %>%  summarise(Mean.Height=round(mean(Height..ft.),2))%>%
+    ggplot(aes(reorder(Country,Mean.Height),Mean.Height)) +
+    geom_bar(stat="identity")+coord_flip()
+```
+
+#5
+```{r}
+bldgct = bldg %>% group_by(Country) %>% summarise(num_builds = n(), Mean.Height=mean(Height..m.))
+head(bldgct)
+
+bldgct %>%
+ggplot(aes(x= reorder(Country,Mean.Height),y=Mean.Height, fill = as.factor(num_builds))) +
+geom_bar(stat = "identity") + coord_flip()
+
+```
+
+
+#6
+```{r}
+bldgn = bldg %>% group_by(Use) %>%
+summarise(Mean.Height=mean(Height..ft.))
+
+bldgn %>%
+ggplot(aes(x= reorder(Use,Mean.Height),y=Mean.Height)) +
+geom_bar(stat = "identity") + coord_flip()
+
+```
